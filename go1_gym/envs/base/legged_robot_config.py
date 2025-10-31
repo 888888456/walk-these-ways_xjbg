@@ -15,7 +15,7 @@ class Cfg(PrefixProto, cli=False):
         num_observation_history = 15
         env_spacing = 3.  # not used with heightfields/trimeshes
         send_timeouts = True  # send time out information to the algorithm
-        episode_length_s = 20  # episode length in seconds
+        episode_length_s = 10  # episode length in seconds
         observe_vel = True
         observe_only_ang_vel = False
         observe_only_lin_vel = False
@@ -33,7 +33,7 @@ class Cfg(PrefixProto, cli=False):
         recording_height_px = 240
         recording_mode = "COLOR"
         num_recording_envs = 1
-        debug_viz = False
+        debug_viz = True
         all_agents_share = False
 
         priv_observe_friction = True
@@ -76,6 +76,7 @@ class Cfg(PrefixProto, cli=False):
         measure_heights = True
         # 1mx1.6m rectangle (without center line)
         measured_points_x = [-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+        #measured_points_x = [-0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
         measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5]
         selected = False  # select a unique terrain type and pass all arguments
         terrain_kwargs = None  # Dict of arguments for selected terrain
@@ -86,7 +87,7 @@ class Cfg(PrefixProto, cli=False):
         num_rows = 10  # number of terrain rows (levels)
         num_cols = 20  # number of terrain cols (types)
         # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-        terrain_proportions = [0.1, 0.1, 0.35, 0.25, 0.2]
+        terrain_proportions = [0.1, 0.2, 0.25, 0.25, 0.2]
         # trimesh only:
         slope_treshold = 0.75  # slopes above this threshold will be corrected to vertical surfaces
         difficulty_scale = 1.
@@ -199,7 +200,7 @@ class Cfg(PrefixProto, cli=False):
         tracking_contacts_shaped_vel = 0.8
 
     class init_state(PrefixProto, cli=False):
-        pos = [0.0, 0.0, 1.]  # x,y,z [m]
+        pos = [0.0, 0.0, 0.38]  # x,y,z [m]
         rot = [0.0, 0.0, 0.0, 1.0]  # x,y,z,w [quat]
         lin_vel = [0.0, 0.0, 0.0]  # x,y,z [m/s]
         ang_vel = [0.0, 0.0, 0.0]  # x,y,z [rad/s]
@@ -387,7 +388,7 @@ class Cfg(PrefixProto, cli=False):
         imu = 0.1
         gravity = 0.05
         contact_states = 0.05
-        height_measurements = 0.1
+        height_measurements = 0.05
         friction_measurements = 0.0
         segmentation_image = 0.0
         rgb_image = 0.0

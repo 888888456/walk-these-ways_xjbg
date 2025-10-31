@@ -35,7 +35,7 @@ class LeggedRobot(BaseTask):
         self.eval_cfg = eval_cfg
         self.sim_params = sim_params
         self.height_samples = None
-        self.debug_viz = False
+        self.debug_viz = True
         self.init_done = False
         self.initial_dynamics_dict = initial_dynamics_dict
         if eval_cfg is not None: self._parse_cfg(eval_cfg)
@@ -133,7 +133,7 @@ class LeggedRobot(BaseTask):
         if self.viewer and self.enable_viewer_sync and self.debug_viz:
             self._draw_debug_vis()
 
-        self._render_headless()
+        # self._render_headless()
 
     def check_termination(self):
         """ Check if environments need to be reset
@@ -200,25 +200,12 @@ class LeggedRobot(BaseTask):
                 self.terrain_levels[:self.num_train_envs].float())
         if self.cfg.commands.command_curriculum:
             self.extras["env_bins"] = torch.Tensor(self.env_command_bins)[:self.num_train_envs]
-            self.extras["train/episode"]["min_command_duration"] = torch.min(self.commands[:, 8])
-            self.extras["train/episode"]["max_command_duration"] = torch.max(self.commands[:, 8])
-            self.extras["train/episode"]["min_command_bound"] = torch.min(self.commands[:, 7])
-            self.extras["train/episode"]["max_command_bound"] = torch.max(self.commands[:, 7])
-            self.extras["train/episode"]["min_command_offset"] = torch.min(self.commands[:, 6])
-            self.extras["train/episode"]["max_command_offset"] = torch.max(self.commands[:, 6])
-            self.extras["train/episode"]["min_command_phase"] = torch.min(self.commands[:, 5])
-            self.extras["train/episode"]["max_command_phase"] = torch.max(self.commands[:, 5])
-            self.extras["train/episode"]["min_command_freq"] = torch.min(self.commands[:, 4])
-            self.extras["train/episode"]["max_command_freq"] = torch.max(self.commands[:, 4])
             self.extras["train/episode"]["min_command_x_vel"] = torch.min(self.commands[:, 0])
             self.extras["train/episode"]["max_command_x_vel"] = torch.max(self.commands[:, 0])
             self.extras["train/episode"]["min_command_y_vel"] = torch.min(self.commands[:, 1])
             self.extras["train/episode"]["max_command_y_vel"] = torch.max(self.commands[:, 1])
             self.extras["train/episode"]["min_command_yaw_vel"] = torch.min(self.commands[:, 2])
             self.extras["train/episode"]["max_command_yaw_vel"] = torch.max(self.commands[:, 2])
-            if self.cfg.commands.num_commands > 9:
-                self.extras["train/episode"]["min_command_swing_height"] = torch.min(self.commands[:, 9])
-                self.extras["train/episode"]["max_command_swing_height"] = torch.max(self.commands[:, 9])
             for curriculum, category in zip(self.curricula, self.category_names):
                 self.extras["train/episode"][f"command_area_{category}"] = np.sum(curriculum.weights) / \
                                                                            curriculum.weights.shape[0]
@@ -324,6 +311,10 @@ class LeggedRobot(BaseTask):
                                       self.dof_vel[:, :self.num_actuated_dof] * self.obs_scales.dof_vel,
                                       self.actions
                                       ), dim=-1)
+
+        if self.cfg.terrain.measure_heights:
+            heights = torch.clip(self.root_states[:, 2].unsqueeze(1) - 0.5 - self.measured_heights, -1, 1.) * self.obs_scales.height_measurements
+            self.obs_buf = torch.cat((self.obs_buf, heights), dim=-1)
 
         if self.cfg.env.observe_two_prev_actions:
             self.obs_buf = torch.cat((self.obs_buf,
@@ -981,6 +972,9 @@ class LeggedRobot(BaseTask):
                                                                device=self.device)
             self.root_states[env_ids, 0] += cfg.terrain.x_init_offset
             self.root_states[env_ids, 1] += cfg.terrain.y_init_offset
+            if cfg.terrain.mesh_type in ["heightfield", "trimesh"] and cfg.terrain.measure_heights:
+                terrain_heights = self._get_heights(env_ids, cfg).mean(dim=1)
+                self.root_states[env_ids, 2] = self.env_origins[env_ids, 2] + terrain_heights +0.35
         else:
             self.root_states[env_ids] = self.base_init_state
             self.root_states[env_ids, :3] += self.env_origins[env_ids]
@@ -1114,6 +1108,11 @@ class LeggedRobot(BaseTask):
                                    torch.ones(4) * noise_scales.contact_states * noise_level,
                                    ), dim=0)
 
+        if self.cfg.terrain.measure_heights:
+            num_height_points = self.height_points.shape[1]
+            noise_vec = torch.cat((noise_vec,
+                                   torch.ones(num_height_points) * noise_scales.height_measurements * noise_level,
+                                   ), dim=0)
 
         noise_vec = noise_vec.to(self.device)
 

@@ -23,11 +23,10 @@ def load_and_run_policy(label, experiment_name, max_vel=1.0, max_yaw_vel=1.0):
         cfg = pkl_cfg["Cfg"]
         print(cfg.keys())
 
-
     se = StateEstimator(lc)
 
     control_dt = 0.02
-    command_profile = RCControllerProfile(dt=control_dt, state_estimator=se, x_scale=max_vel, y_scale=0.6, yaw_scale=max_yaw_vel)
+    command_profile = RCControllerProfile(dt=control_dt, state_estimator=se, x_scale=max_vel, y_scale=max_vel, yaw_scale=max_yaw_vel)
 
     hardware_agent = LCMAgent(cfg, se, command_profile)
     se.spin()
@@ -68,10 +67,9 @@ def load_policy(logdir):
 
     return policy
 
-
 if __name__ == '__main__':
-    label = "gait-conditioned-agility/pretrain-v0/train"
+    label = "gait-conditioned-agility/2025-10-29/train"
 
     experiment_name = "example_experiment"
 
-    load_and_run_policy(label, experiment_name=experiment_name, max_vel=3.5, max_yaw_vel=5.0)
+    load_and_run_policy(label, experiment_name=experiment_name, max_vel=1.0, max_yaw_vel=1.0)

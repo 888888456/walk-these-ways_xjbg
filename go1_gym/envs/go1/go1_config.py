@@ -63,7 +63,7 @@ def config_go1(Cnfg: Union[Cfg, Meta]):
     _.teleport_robots = True
     _.border_size = 50
 
-    _.terrain_proportions = [0, 0, 0, 0, 0, 0, 0, 0, 1.0]
+    _.terrain_proportions = [0.1, 0.1, 0.35, 0.25, 0.2]
     _.curriculum = False
 
     _ = Cnfg.env
@@ -78,7 +78,7 @@ def config_go1(Cnfg: Union[Cfg, Meta]):
     _ = Cnfg.commands
     _.heading_command = False
     _.resampling_time = 10.0
-    _.command_curriculum = True
+    _.command_curriculum = False
     _.num_lin_vel_bins = 30
     _.num_ang_vel_bins = 30
     _.lin_vel_x = [-0.6, 0.6]

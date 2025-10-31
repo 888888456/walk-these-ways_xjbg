@@ -38,7 +38,8 @@ class VelocityTrackingEasyEnv(LeggedRobot):
             "contact_states": (self.contact_forces[:, self.feet_indices, 2] > 1.).detach().cpu().numpy().copy(),
             "foot_positions": (self.foot_positions).detach().cpu().numpy().copy(),
             "body_pos": self.root_states[:, 0:3].detach().cpu().numpy(),
-            "torques": self.torques.detach().cpu().numpy()
+            "torques": self.torques.detach().cpu().numpy(),
+            "env_bins": torch.zeros(self.num_envs, dtype=torch.long)
         })
 
         return self.obs_buf, self.rew_buf, self.reset_buf, self.extras

@@ -211,7 +211,6 @@ class LCMAgent():
         if hard_reset:
             command_for_robot.id = -1
 
-
         self.torques = (self.joint_pos_target - self.dof_pos) * self.p_gains + (self.joint_vel_target - self.dof_vel) * self.d_gains
 
         lc.publish("pd_plustau_targets", command_for_robot.encode())
@@ -234,34 +233,6 @@ class LCMAgent():
         if self.timestep % 100 == 0: print(f'frq: {1 / (time.time() - self.time)} Hz');
         self.time = time.time()
         obs = self.get_obs()
-
-        # clock accounting
-        frequencies = self.commands[:, 4]
-        phases = self.commands[:, 5]
-        offsets = self.commands[:, 6]
-        if self.num_commands == 8:
-            bounds = 0
-            durations = self.commands[:, 7]
-        else:
-            bounds = self.commands[:, 7]
-            durations = self.commands[:, 8]
-        self.gait_indices = torch.remainder(self.gait_indices + self.dt * frequencies, 1.0)
-
-        if "pacing_offset" in self.cfg["commands"] and self.cfg["commands"]["pacing_offset"]:
-            self.foot_indices = [self.gait_indices + phases + offsets + bounds,
-                                 self.gait_indices + bounds,
-                                 self.gait_indices + offsets,
-                                 self.gait_indices + phases]
-        else:
-            self.foot_indices = [self.gait_indices + phases + offsets + bounds,
-                                 self.gait_indices + offsets,
-                                 self.gait_indices + bounds,
-                                 self.gait_indices + phases]
-        self.clock_inputs[:, 0] = torch.sin(2 * np.pi * self.foot_indices[0])
-        self.clock_inputs[:, 1] = torch.sin(2 * np.pi * self.foot_indices[1])
-        self.clock_inputs[:, 2] = torch.sin(2 * np.pi * self.foot_indices[2])
-        self.clock_inputs[:, 3] = torch.sin(2 * np.pi * self.foot_indices[3])
-
 
         images = {'front': self.se.get_camera_front(),
                   'bottom': self.se.get_camera_bottom(),

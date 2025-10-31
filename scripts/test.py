@@ -71,7 +71,7 @@ def run_env(render=False, headless=False):
     Cfg.reward_scales.feet_contact_forces = 0.0
 
     Cfg.domain_rand.rand_interval_s = 4
-    Cfg.commands.num_commands = 15
+    Cfg.commands.num_commands = 3
     Cfg.env.observe_two_prev_actions = True
     Cfg.env.observe_yaw = True
     Cfg.env.num_observations = 71

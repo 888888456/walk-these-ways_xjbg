@@ -29,7 +29,6 @@ class PPO_Args(PrefixProto):
 
     selective_adaptation_module_loss = False
 
-
 class PPO:
     actor_critic: ActorCritic
 

@@ -128,8 +128,8 @@ class Terrain:
             terrain_utils.pyramid_sloped_terrain(terrain, slope=slope, platform_size=3.)
         elif choice < proportions[1]:
             terrain_utils.pyramid_sloped_terrain(terrain, slope=slope, platform_size=3.)
-            terrain_utils.random_uniform_terrain(terrain, min_height=-0.05, max_height=0.05,
-                                                 step=self.cfg.terrain_smoothness, downsampled_scale=0.2)
+            terrain_utils.random_uniform_terrain(terrain, min_height=-0.05, max_height=0.05, step=0.005,
+                                                 downsampled_scale=0.2)
         elif choice < proportions[3]:
             if choice < proportions[2]:
                 step_height *= -1
@@ -142,19 +142,8 @@ class Terrain:
                                                      rectangle_max_size, num_rectangles, platform_size=3.)
         elif choice < proportions[5]:
             terrain_utils.stepping_stones_terrain(terrain, stone_size=stepping_stones_size,
-                                                  stone_distance=stone_distance, max_height=0., platform_size=4.)
-        elif choice < proportions[6]:
-            pass
-        elif choice < proportions[7]:
-            pass
-        elif choice < proportions[8]:
-            terrain_utils.random_uniform_terrain(terrain, min_height=-cfg.terrain_noise_magnitude,
-                                                 max_height=cfg.terrain_noise_magnitude, step=0.005,
-                                                 downsampled_scale=0.2)
-        elif choice < proportions[9]:
-            terrain_utils.random_uniform_terrain(terrain, min_height=-0.05, max_height=0.05,
-                                                 step=self.cfg.terrain_smoothness, downsampled_scale=0.2)
-            terrain.height_field_raw[0:terrain.length // 2, :] = 0
+                                                  stone_distance=stone_distance, max_height=0., platform_size=4.,
+                                                  depth=-0.5)
 
         return terrain
 
@@ -177,4 +166,6 @@ class Terrain:
         env_origin_z = np.max(self.height_field_raw[start_x: end_x, start_y:end_y]) * terrain.vertical_scale
 
         cfg.env_origins[i, j] = [env_origin_x, env_origin_y, env_origin_z]
+
+
 

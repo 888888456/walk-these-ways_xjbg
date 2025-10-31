@@ -1,4 +1,4 @@
-def train_go1(headless=True):
+def train_go1(headless=False):
 
     import isaacgym
     assert isaacgym
@@ -17,6 +17,11 @@ def train_go1(headless=True):
     from go1_gym_learn.ppo_cse import RunnerArgs
 
     config_go1(Cfg)
+
+    Cfg.sim.physx.max_gpu_contact_pairs = 2**20
+    Cfg.env.num_envs = 5
+    Cfg.env.episode_length_s = 1
+
 
     Cfg.commands.num_lin_vel_bins = 30
     Cfg.commands.num_ang_vel_bins = 30
@@ -95,8 +100,8 @@ def train_go1(headless=True):
     Cfg.domain_rand.tile_height_curriculum_step = 0.01
     Cfg.terrain.border_size = 0.0
     Cfg.terrain.mesh_type = "trimesh"
-    #Cfg.terrain.terrain_proportions = [0.1, 0.2, 0.25, 0.25, 0.2]
-    Cfg.terrain.terrain_proportions = [0., 0., 0., 0., 0., 0., 0. ,0., 1.]
+    Cfg.terrain.terrain_proportions = [0.1, 0.2, 0.25, 0.25, 0.2]
+    # Cfg.terrain.terrain_proportions = [0., 0., 0., 0., 0., 0., 0., 0., 1.]
     Cfg.terrain.curriculum = True
     Cfg.terrain.num_cols = 30
     Cfg.terrain.num_rows = 30
@@ -119,8 +124,8 @@ def train_go1(headless=True):
     Cfg.rewards.terminal_body_height = 0.05
     Cfg.rewards.use_terminal_roll_pitch = False
     Cfg.rewards.terminal_body_ori = 1.6
-    Cfg.commands.resampling_time = 10
 
+    Cfg.commands.resampling_time = 10
 
     Cfg.reward_scales.tracking_lin_vel = 1.0
     Cfg.reward_scales.tracking_ang_vel = 0.5
@@ -128,13 +133,15 @@ def train_go1(headless=True):
     Cfg.reward_scales.action_smoothness_1 = -0.1
     Cfg.reward_scales.action_smoothness_2 = -0.1
     Cfg.reward_scales.dof_vel = -1e-4
+    Cfg.reward_scales.jump = 0.0
     Cfg.rewards.base_height_target = 0.34
+    Cfg.reward_scales.raibert_heuristic = 0.0
+    Cfg.reward_scales.feet_clearance_cmd_linear = -0.0
     Cfg.reward_scales.lin_vel_z = -1.0
     Cfg.reward_scales.ang_vel_xy = -0.02
+    Cfg.reward_scales.tracking_contacts_shaped_force = 0.0
     Cfg.reward_scales.action_rate = -0.01
     Cfg.reward_scales.collision = -5.0
-    Cfg.reward_scales.termination = -10.0
-
 
     Cfg.rewards.kappa_gait_probs = 0.12
     Cfg.rewards.gait_force_sigma = 100.
@@ -176,7 +183,7 @@ def train_go1(headless=True):
     env = HistoryWrapper(env)
     gpu_id = 0
     runner = Runner(env, device=f"cuda:{gpu_id}")
-    runner.learn(num_learning_iterations=5000, init_at_random_ep_len=True, eval_freq=100)
+    runner.learn(num_learning_iterations=200, init_at_random_ep_len=True, eval_freq=100)
 
 
 if __name__ == '__main__':
@@ -188,31 +195,31 @@ if __name__ == '__main__':
     logger.configure(logger.utcnow(f'gait-conditioned-agility/%Y-%m-%d/{stem}/%H%M%S.%f'),
                      root=Path(f"{MINI_GYM_ROOT_DIR}/runs").resolve(), )
     logger.log_text("""
-                charts: 
-                - yKey: train/episode/rew_total/mean
-                  xKey: iterations
-                - yKey: train/episode/rew_tracking_lin_vel/mean
-                  xKey: iterations
-                - yKey: train/episode/rew_tracking_contacts_shaped_force/mean
-                  xKey: iterations
-                - yKey: train/episode/rew_action_smoothness_1/mean
-                  xKey: iterations
-                - yKey: train/episode/rew_action_smoothness_2/mean
-                  xKey: iterations
-                - yKey: train/episode/rew_tracking_contacts_shaped_vel/mean
-                  xKey: iterations
-                - yKey: train/episode/rew_orientation_control/mean
-                  xKey: iterations
-                - yKey: train/episode/rew_dof_pos/mean
-                  xKey: iterations
-                - yKey: train/episode/command_area_trot/mean
-                  xKey: iterations
-                - yKey: train/episode/max_terrain_height/mean
-                  xKey: iterations
-                - type: video
-                  glob: "videos/*.mp4"
-                - yKey: adaptation_loss/mean
-                  xKey: iterations
-                """, filename=".charts.yml", dedent=True)
+                    charts: 
+                    - yKey: train/episode/rew_total/mean
+                      xKey: iterations
+                    - yKey: train/episode/rew_tracking_lin_vel/mean
+                      xKey: iterations
+                    - yKey: train/episode/rew_tracking_contacts_shaped_force/mean
+                      xKey: iterations
+                    - yKey: train/episode/rew_action_smoothness_1/mean
+                      xKey: iterations
+                    - yKey: train/episode/rew_action_smoothness_2/mean
+                      xKey: iterations
+                    - yKey: train/episode/rew_tracking_contacts_shaped_vel/mean
+                      xKey: iterations
+                    - yKey: train/episode/rew_orientation_control/mean
+                      xKey: iterations
+                    - yKey: train/episode/rew_dof_pos/mean
+                      xKey: iterations
+                    - yKey: train/episode/command_area_trot/mean
+                      xKey: iterations
+                    - yKey: train/episode/max_terrain_height/mean
+                      xKey: iterations
+                    - type: video
+                      glob: "videos/*.mp4"
+                    - yKey: adaptation_loss/mean
+                      xKey: iterations
+                    """, filename=".charts.yml", dedent=True)
 
     train_go1()
